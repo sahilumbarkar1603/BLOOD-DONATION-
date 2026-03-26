@@ -17,26 +17,29 @@ export default function Login() {
     setMessage('');
 
     try {
+      const url = isLogin 
+        ? 'https://your-new-render-url.onrender.com/api/login' 
+        : 'https://your-new-render-url.onrender.com/api/register';
+
+      const payload = isLogin 
+        ? { email: email.toLowerCase(), password } 
+        : { name, email: email.toLowerCase(), password };
+
+      const response = await axios.post(url, payload);
+
       if (isLogin) {
-        // MATCHES YOUR BACKEND EXACTLY (Removed /auth)
-        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/login', { email, password });
-        
-        // Save the user ID so the app remembers you
+        // We save the USER ID since your backend doesn't send a 'token' string
         localStorage.setItem('token', response.data.user.id);
         setMessage('✅ Login Successful!');
-        
-        setTimeout(() => {
-            navigate('/dashboard'); 
-        }, 1500);
-
+        setTimeout(() => navigate('/dashboard'), 1500);
       } else {
-        // MATCHES YOUR BACKEND EXACTLY (Removed /auth)
-        await axios.post('https://blood-donation-mjb9.onrender.com/api/register', { name, email, password });
-        setMessage('✅ Registration Successful! Please sign in.');
+        setMessage('✅ Registration Successful! Now Sign In.');
         setIsLogin(true);
       }
     } catch (error) {
-      setMessage('❌ ' + (error.response?.data?.message || 'Something went wrong'));
+      // This will show the REAL error from the server (like "User not found")
+      const errorMsg = error.response?.data?.message || "Something went wrong";
+      setMessage('❌ ' + errorMsg);
     }
   };
 
