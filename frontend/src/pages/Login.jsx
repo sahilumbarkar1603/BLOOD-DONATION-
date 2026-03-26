@@ -19,7 +19,7 @@ export default function Login() {
     try {
       if (isLogin) {
         // Send Login Data to Backend
-        const response = await axios.post('http://localhost:5000/api/login', { email, password });
+        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/login', { email, password });
         setMessage('✅ Login Successful!');
         
         // 3. THIS PART JUMPS TO THE DASHBOARD AFTER 1.5 SECONDS
@@ -29,7 +29,7 @@ export default function Login() {
 
       } else {
         // Send Registration Data to Backend
-        const response = await axios.post('http://localhost:5000/api/register', { name, email, password });
+        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/register', { name, email, password });
         setMessage('✅ Registration Successful! Please sign in.');
         setIsLogin(true);
       }
