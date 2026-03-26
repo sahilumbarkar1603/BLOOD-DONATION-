@@ -69,8 +69,9 @@ app.post('/api/auth/login', async (req, res) => {
     console.log(`Login Successful: ${email}`);
     res.json({ user: { id: user._id, name: user.name } });
   } catch (error) {
-    res.status(500).json({ message: "Server error during login." });
-  }
+  console.log("🚨 LOGIN CRASH DETAILS:", error); // <-- WE ADDED THIS LINE
+  res.status(500).json({ message: "Server error during login." });
+}
 });
 
 app.get('/api/donors', async (req, res) => {
