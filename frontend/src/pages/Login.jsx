@@ -1,34 +1,35 @@
 import React, { useState } from 'react';
 import { Droplet, Lock, Mail } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate(); // <--- This is the magic "Step 2"
   
-  // States to hold the input data
+  const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState(''); // To show success or error messages
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevents the page from refreshing
+    e.preventDefault(); 
     setMessage('');
 
     try {
       if (isLogin) {
-        // Send Login Data to Backend
+        
         const response = await axios.post('http://localhost:5000/api/login', { email, password });
         setMessage('✅ Login Successful!');
-        console.log(response.data); // We will use this token later for the dashboard
+        console.log(response.data); 
       } else {
-        // Send Registration Data to Backend
+        
         const response = await axios.post('http://localhost:5000/api/register', { name, email, password });
         setMessage('✅ Registration Successful! Please sign in.');
-        setIsLogin(true); // Switch back to login form
+        setIsLogin(true); 
       }
     } catch (error) {
-      // Show error message from backend
+      
       setMessage('❌ ' + (error.response?.data?.message || 'Something went wrong'));
     }
   };
