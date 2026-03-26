@@ -13,35 +13,40 @@ export default function Login() {
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
+  e.preventDefault();
+  setMessage('⏳ Connecting...');
 
-    try {
-      const url = isLogin 
-        ? 'https://your-new-render-url.onrender.com/api/login' 
-        : 'https://your-new-render-url.onrender.com/api/register';
+  try {
+    const baseUrl = 'https://blood-donation-2-9t44.onrender.com'; // Your Render URL
+    const endpoint = isLogin ? '/api/login' : '/api/register';
+    
+    const payload = isLogin 
+      ? { email: email.toLowerCase(), password } 
+      : { name, email: email.toLowerCase(), password };
 
-      const payload = isLogin 
-        ? { email: email.toLowerCase(), password } 
-        : { name, email: email.toLowerCase(), password };
+    console.log("Sending to:", baseUrl + endpoint);
 
-      const response = await axios.post(url, payload);
+    const response = await axios.post(baseUrl + endpoint, payload);
 
-      if (isLogin) {
-        // We save the USER ID since your backend doesn't send a 'token' string
-        localStorage.setItem('token', response.data.user.id);
-        setMessage('✅ Login Successful!');
-        setTimeout(() => navigate('/dashboard'), 1500);
-      } else {
-        setMessage('✅ Registration Successful! Now Sign In.');
-        setIsLogin(true);
-      }
-    } catch (error) {
-      // This will show the REAL error from the server (like "User not found")
-      const errorMsg = error.response?.data?.message || "Something went wrong";
-      setMessage('❌ ' + errorMsg);
+    if (isLogin) {
+      // Look at your backend: it sends { user: { id: ... } }
+      // We save the ID so the app knows you are logged in
+      const userId = response.data.user?.id || response.data.user?._id;
+      localStorage.setItem('token', userId);
+      
+      setMessage('✅ Login Successful!');
+      setTimeout(() => navigate('/dashboard'), 1500);
+    } else {
+      setMessage('✅ Registered! Please sign in now.');
+      setIsLogin(true);
     }
-  };
+  } catch (error) {
+    // This part is CRUCIAL. It grabs the REAL error message from your server.
+    const serverMessage = error.response?.data?.message || error.message;
+    setMessage('❌ ' + serverMessage);
+    console.error("Login Error:", error.response?.data);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
