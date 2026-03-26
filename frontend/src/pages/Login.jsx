@@ -31,7 +31,7 @@ export default function Login() {
 
       } else {
         // MATCHES YOUR BACKEND EXACTLY (Removed /auth)
-        await axios.post('https://blood-donation-2-9t44.onrender.com/api/register', { name, email, password });
+        await axios.post('https://blood-donation-mjb9.onrender.com/api/register', { name, email, password });
         setMessage('✅ Registration Successful! Please sign in.');
         setIsLogin(true);
       }
