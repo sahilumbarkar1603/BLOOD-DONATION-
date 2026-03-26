@@ -7,32 +7,29 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// This allows your Vercel website and your local computer to talk to the backend
 app.use(cors({
   origin: "*", 
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
-// 1. Connect to Database
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Database Connected Successfully! 🚀"))
   .catch((error) => console.log("Database Connection Failed ❌:", error.message));
 
 const User = require('./models/user');
 
-// ==========================================
-// 2. THE REGISTRATION ROUTE (SIGN UP)
-// ==========================================
-app.post('/api/register', async (req, res) => {
+
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, bloodGroup, city, phone } = req.body;
     
-    // Check if user exists
+    
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) return res.status(400).json({ message: "User already exists!" });
 
-    // Hash Password
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -46,7 +43,7 @@ app.post('/api/register', async (req, res) => {
     });
 
     await newUser.save();
-    console.log(`New User Created: ${email}`); // This shows in your VS Code terminal
+    console.log(`New User Created: ${email}`); 
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
     console.log("Error saving user:", error.message);
@@ -54,10 +51,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// ==========================================
-// 3. THE LOGIN ROUTE (SIGN IN)
-// ==========================================
-app.post('/api/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     

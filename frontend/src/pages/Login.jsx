@@ -18,9 +18,11 @@ export default function Login() {
 
     try {
       if (isLogin) {
-        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/login', { email, password });
+        // MATCHES YOUR BACKEND EXACTLY (Removed /auth)
+        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/login', { email, password });
         
-        localStorage.setItem('token', response.data.token);
+        // Save the user ID so the app remembers you
+        localStorage.setItem('token', response.data.user.id);
         setMessage('✅ Login Successful!');
         
         setTimeout(() => {
@@ -28,7 +30,8 @@ export default function Login() {
         }, 1500);
 
       } else {
-        await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/register', { name, email, password });
+        // MATCHES YOUR BACKEND EXACTLY (Removed /auth)
+        await axios.post('https://blood-donation-2-9t44.onrender.com/api/register', { name, email, password });
         setMessage('✅ Registration Successful! Please sign in.');
         setIsLogin(true);
       }
