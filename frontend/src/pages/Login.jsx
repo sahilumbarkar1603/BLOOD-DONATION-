@@ -1,75 +1,123 @@
 import React, { useState } from 'react';
+import { Droplet, Lock, Mail } from 'lucide-react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
 
-const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
-    const [message, setMessage] = useState('');
-    const navigate = useNavigate();
+export default function Login() {
+  const [isLogin, setIsLogin] = useState(true);
+  
+  // States to hold the input data
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState(''); // To show success or error messages
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/login', formData);
-            localStorage.setItem('token', res.data.token);
-            navigate('/dashboard');
-        } catch (err) {
-            setMessage(err.response?.data?.message || 'Login Failed');
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevents the page from refreshing
+    setMessage('');
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <div className="p-8 bg-white shadow-md rounded-lg w-96">
-                <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <input type="email" placeholder="Email" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, email: e.target.value})} required />
-                    <input type="password" placeholder="Password" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, password: e.target.value})} required />
-                    <button type="submit" className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700">Login</button>
-                </form>
-                {message && <p className="text-red-500 mt-2 text-center">{message}</p>}
-                <p className="mt-4 text-center">New? <Link to="/register" className="text-blue-500">Register</Link></p>
-            </div>
+    try {
+      if (isLogin) {
+        // Send Login Data to Backend
+        const response = await axios.post('http://localhost:5000/api/login', { email, password });
+        setMessage('✅ Login Successful!');
+        console.log(response.data); // We will use this token later for the dashboard
+      } else {
+        // Send Registration Data to Backend
+        const response = await axios.post('http://localhost:5000/api/register', { name, email, password });
+        setMessage('✅ Registration Successful! Please sign in.');
+        setIsLogin(true); // Switch back to login form
+      }
+    } catch (error) {
+      // Show error message from backend
+      setMessage('❌ ' + (error.response?.data?.message || 'Something went wrong'));
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transition-all duration-300">
+        
+        <div className="text-center mb-8">
+          <div className="bg-blood/10 p-4 rounded-full inline-block mb-2">
+            <Droplet className="w-8 h-8 text-blood" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {isLogin ? 'Welcome Back' : 'Become a Donor'}
+          </h2>
+          <p className="text-gray-500 text-sm mt-1">
+            {isLogin ? 'Login to manage your profile' : 'Register to save lives'}
+          </p>
         </div>
-    );
-};
-export default Login;
 
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+        {/* Status Message Display */}
+        {message && (
+          <div className={`p-3 mb-4 text-sm font-semibold rounded-lg text-center ${message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {message}
+          </div>
+        )}
 
-const Register = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', bloodGroup: '', location: '' });
-    const [message, setMessage] = useState('');
-    const navigate = useNavigate();
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/register', formData);
-            navigate('/login');
-        } catch (err) {
-            setMessage(err.response?.data?.message || 'Registration Failed');
-        }
-    };
-
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <div className="p-8 bg-white shadow-md rounded-lg w-96">
-                <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <input type="text" placeholder="Full Name" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, name: e.target.value})} required />
-                    <input type="email" placeholder="Email" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, email: e.target.value})} required />
-                    <input type="password" placeholder="Password" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, password: e.target.value})} required />
-                    <input type="text" placeholder="Blood Group" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})} required />
-                    <input type="text" placeholder="Location" className="w-full p-2 border rounded" onChange={(e) => setFormData({...formData, location: e.target.value})} required />
-                    <button type="submit" className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700">Register</button>
-                </form>
-                {message && <p className="text-red-500 mt-2 text-center">{message}</p>}
-                <p className="mt-4 text-center">Have an account? <Link to="/login" className="text-blue-500">Login</Link></p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input 
+                type="text" 
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blood outline-none" 
+                placeholder="John Doe" 
+              />
             </div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <div className="relative">
+              <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+              <input 
+                type="email" 
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blood outline-none" 
+                placeholder="you@example.com" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
+              <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blood outline-none" 
+                placeholder="••••••••" 
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="w-full bg-blood hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200">
+            {isLogin ? 'Sign In' : 'Register Now'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button 
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setMessage(''); // Clear messages when switching
+            }} 
+            className="text-blood hover:underline text-sm font-medium">
+            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+          </button>
         </div>
-    );
-};
-export default Register;
+      </div>
+    </div>
+  );
+}
