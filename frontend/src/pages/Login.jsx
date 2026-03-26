@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Droplet, Lock, Mail } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
 export default function Login() {
-  const navigate = useNavigate(); // <--- This is the magic "Step 2"
   
+  const navigate = useNavigate(); // THE NAVIGATION "GPS"
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,28 +13,31 @@ export default function Login() {
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setMessage('');
 
     try {
       if (isLogin) {
+        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/login', { email, password });
         
-        const response = await axios.post('http://localhost:5000/api/login', { email, password });
         setMessage('✅ Login Successful!');
-        console.log(response.data); 
-      } else {
         
-        const response = await axios.post('http://localhost:5000/api/register', { name, email, password });
+        // SAVE TOKEN AND REDIRECT
+        localStorage.setItem('token', response.data.token);
+        setTimeout(() => {
+            navigate('/dashboard'); 
+        }, 1500);
+
+      } else {
+        await axios.post('https://blood-donation-2-9t44.onrender.com/api/auth/register', { name, email, password });
         setMessage('✅ Registration Successful! Please sign in.');
-        setIsLogin(true); 
+        setIsLogin(true);
       }
     } catch (error) {
-      
       setMessage('❌ ' + (error.response?.data?.message || 'Something went wrong'));
     }
   };
 
-  return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transition-all duration-300">
         
