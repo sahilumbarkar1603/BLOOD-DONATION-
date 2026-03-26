@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Database Connected Successfully! 🚀"))
   .catch((error) => console.log("Database Connection Failed ❌:", error.message));
 
-const User = require('./models/User');
+const User = require('./models/user');
 
 // ==========================================
 // 2. THE REGISTRATION ROUTE (SIGN UP)
