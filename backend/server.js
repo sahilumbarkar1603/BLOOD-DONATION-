@@ -6,7 +6,13 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// This allows your Vercel website and your local computer to talk to the backend
+app.use(cors({
+  origin: "*", 
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 // 1. Connect to Database
 mongoose.connect(process.env.MONGO_URI)

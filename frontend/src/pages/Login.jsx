@@ -1,127 +1,65 @@
 import React, { useState } from 'react';
-import { Droplet, Lock, Mail } from 'lucide-react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // 1. Added the steering wheel tool
+import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  
-  const navigate = useNavigate(); // 2. Created the steering wheel constant
+const Login = () => {
+    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
+    // 1. Handle Input Changes
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    try {
-      if (isLogin) {
-        // Send Login Data to Backend
-        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/login', { email, password });
-        setMessage('✅ Login Successful!');
-        
-        // 3. THIS PART JUMPS TO THE DASHBOARD AFTER 1.5 SECONDS
-        setTimeout(() => {
-          navigate('/dashboard'); 
-        }, 1500);
+    // 2. The Main Login Function
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevents page reload
+        setMessage('Connecting to server...');
 
-      } else {
-        // Send Registration Data to Backend
-        const response = await axios.post('https://blood-donation-2-9t44.onrender.com/api/register', { name, email, password });
-        setMessage('✅ Registration Successful! Please sign in.');
-        setIsLogin(true);
-      }
-    } catch (error) {
-      setMessage('❌ ' + (error.response?.data?.message || 'Something went wrong'));
-    }
-  };
+        try {
+            // TARGET: Your Render Backend
+            const response = await axios.post(
+                'https://blood-donation-2-9t44.onrender.com/api/auth/login', 
+                formData
+            );
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transition-all duration-300">
-        
-        <div className="text-center mb-8">
-          <div className="bg-red-100 p-4 rounded-full inline-block mb-2">
-            <Droplet className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            {isLogin ? 'Welcome Back' : 'Become a Donor'}
-          </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            {isLogin ? 'Login to manage your profile' : 'Register to save lives'}
-          </p>
+            if (response.data.token) {
+                // Save the "Secret Key" (Token) so the user stays logged in
+                localStorage.setItem('token', response.data.token);
+                setMessage('Login Successful! Redirecting...');
+                
+                // Move to Dashboard after 1 second
+                setTimeout(() => navigate('/dashboard'), 1000);
+            }
+        } catch (error) {
+            console.error("Login Error Details:", error.response || error);
+            const errorMsg = error.response?.data?.message || 'Server Error. Check your connection.';
+            setMessage(errorMsg);
+        }
+    };
+
+    return (
+        <div style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
+            <h2>Login to LifeDrop</h2>
+            <form onSubmit={handleSubmit}>
+                <input 
+                    type="email" name="email" placeholder="Email" 
+                    onChange={handleChange} required 
+                    style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px' }}
+                />
+                <input 
+                    type="password" name="password" placeholder="Password" 
+                    onChange={handleChange} required 
+                    style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px' }}
+                />
+                <button type="submit" style={{ width: '100%', padding: '10px', background: 'red', color: 'white', border: 'none', cursor: 'pointer' }}>
+                    Login
+                </button>
+            </form>
+            {message && <p style={{ marginTop: '10px', color: message.includes('Successful') ? 'green' : 'red' }}>{message}</p>}
         </div>
+    );
+};
 
-        {message && (
-          <div className={`p-3 mb-4 text-sm font-semibold rounded-lg text-center ${message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {message}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Full Name</label>
-              <input 
-                type="text" 
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-left" 
-                placeholder="John Doe" 
-              />
-            </div>
-          )}
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Email</label>
-            <div className="relative">
-              <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-left" 
-                placeholder="you@example.com" 
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Password</label>
-            <div className="relative">
-              <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
-              <input 
-                type="password" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-left" 
-                placeholder="••••••••" 
-              />
-            </div>
-          </div>
-
-          <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200">
-            {isLogin ? 'Sign In' : 'Register Now'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button 
-            type="button"
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setMessage('');
-            }} 
-            className="text-red-600 hover:underline text-sm font-medium">
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default Login;
