@@ -19,7 +19,7 @@ export default function Dashboard() {
   // 1. Fetch all donors from the database
   const fetchDonors = async () => {
     try {
-      const res = await axios.get('https://blood-donation-2-9t44.onrender.com/api/donors');
+      const res = await axios.get('/api/donors');
       setDonors(res.data);
     } catch (err) {
       console.error("Error fetching donors");
@@ -33,7 +33,7 @@ export default function Dashboard() {
     e.preventDefault();
     try {
       // We use our register API to add donors for now
-      await axios.post('https://blood-donation-2-9t44.onrender.com/api/register', {
+      await axios.post('/api/register', {
         name: formData.name,
         email: `${formData.name.replace(/\s/g, '').toLowerCase()}${Math.floor(Math.random() * 1000)}@test.com`,
         password: 'password123',
