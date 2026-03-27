@@ -1,68 +1,68 @@
 import React, { useState } from 'react';
-import { Droplet, Lock, Mail } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
-  const navigate = useNavigate();
-  
+const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+
+  // 🚨 YOUR EXACT RENDER LINK (Must have https://) 🚨
+  const API_URL = 'https://blood-donation-2-9t44.onrender.com';
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setMessage('⏳ Connecting...');
+    e.preventDefault();
+    setMessage('⏳ Connecting to server...');
 
-  try {
-    const baseUrl = 'https://blood-donation-2-9t44.onrender.com'; // Your Render URL
-    const endpoint = isLogin ? '/api/login' : '/api/register';
-    
-    const payload = isLogin 
-      ? { email: email.toLowerCase(), password } 
-      : { name, email: email.toLowerCase(), password };
+    try {
+      const endpoint = isLogin ? '/api/login' : '/api/register';
+      const payload = isLogin 
+        ? { email: email.toLowerCase(), password } 
+        : { name, email: email.toLowerCase(), password };
 
-    console.log("Sending to:", baseUrl + endpoint);
+      const response = await axios.post(`${API_URL}${endpoint}`, payload);
 
-    const response = await axios.post(baseUrl + endpoint, payload);
-
-    if (isLogin) {
-      // Look at your backend: it sends { user: { id: ... } }
-      // We save the ID so the app knows you are logged in
-      const userId = response.data.user?.id || response.data.user?._id;
-      localStorage.setItem('token', userId);
+      if (isLogin) {
+        const userId = response.data.user?.id || response.data.user?._id;
+        localStorage.setItem('token', userId);
+        
+        setMessage('✅ Login Successful!');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      } else {
+        setMessage('✅ Registration Successful! Please sign in.');
+        setIsLogin(true);
+        setPassword(''); // Clear password for safety
+      }
+    } catch (error) {
+      console.error("Error details:", error);
       
-      setMessage('✅ Login Successful!');
-      setTimeout(() => navigate('/dashboard'), 1500);
-    } else {
-      setMessage('✅ Registered! Please sign in now.');
-      setIsLogin(true);
+      if (error.response) {
+        // The server connected, but password was wrong or user exists
+        setMessage(`❌ ${error.response.data.message || 'Something went wrong'}`);
+      } else {
+        // The dreaded Network Error (Server is asleep)
+        setMessage('❌ Network Error: Server is waking up. Please wait 30 seconds and click again.');
+      }
     }
-  } catch (error) {
-    // This part is CRUCIAL. It grabs the REAL error message from your server.
-    const serverMessage = error.response?.data?.message || error.message;
-    setMessage('❌ ' + serverMessage);
-    console.error("Login Error:", error.response?.data);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        
-        <div className="text-center mb-8">
-          <div className="bg-red-100 p-4 rounded-full inline-block mb-2">
-            <Droplet className="w-8 h-8 text-red-600" />
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+            🩸
           </div>
           <h2 className="text-2xl font-bold text-gray-800">
-            {isLogin ? 'Welcome Back' : 'Become a Donor'}
+            {isLogin ? 'Welcome Back' : 'Join Us'}
           </h2>
         </div>
 
         {message && (
-          <div className={`p-3 mb-4 text-sm font-semibold rounded-lg text-center ${message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          <div className={`p-3 rounded mb-4 text-sm text-center font-medium ${message.includes('✅') ? 'bg-green-100 text-green-700' : message.includes('⏳') ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
             {message}
           </div>
         )}
@@ -70,38 +70,63 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border rounded-lg outline-none" placeholder="John Doe" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input 
+                type="text" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                placeholder="Your Name"
+              />
             </div>
           )}
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="relative">
-              <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg outline-none" placeholder="you@example.com" />
-            </div>
+            <input 
+              type="email" 
+              required 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="you@example.com"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
-              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg outline-none" placeholder="••••••••" />
-            </div>
+            <input 
+              type="password" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="••••••••"
+            />
           </div>
 
-          <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg">
-            {isLogin ? 'Sign In' : 'Register Now'}
+          <button 
+            type="submit" 
+            className="w-full bg-red-600 text-white py-2 rounded font-medium hover:bg-red-700 transition duration-200"
+          >
+            {isLogin ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <button type="button" onClick={() => { setIsLogin(!isLogin); setMessage(''); }} className="text-red-600 hover:underline text-sm font-medium">
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+        <div className="text-center mt-4 text-sm text-gray-600">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <button 
+            type="button"
+            onClick={() => { setIsLogin(!isLogin); setMessage(''); }} 
+            className="text-red-600 hover:underline font-medium"
+          >
+            {isLogin ? 'Sign up' : 'Sign in'}
           </button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Login;
