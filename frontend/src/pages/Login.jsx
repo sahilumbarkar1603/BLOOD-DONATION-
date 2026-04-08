@@ -10,8 +10,8 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  // 🚨 YOUR EXACT RENDER LINK (Must have https://) 🚨
-  const API_URL = 'https://blood-donation-2-9t44.onrender.com';
+  // API calls now go to the same Vercel domain (serverless functions)
+  const API_URL = '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
